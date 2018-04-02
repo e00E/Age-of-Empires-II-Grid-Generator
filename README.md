@@ -26,6 +26,8 @@ After running the application a new mod called `Grid Generator` will appear in t
 * `--preview` Show a rough preview of the grid without creating any files.
 * `--clean` Clean the installation directory before creating new files. This will remove all `.png` files in the directory. Existing files will still be overwritten even if the option is not given.
 
+On Windows it might help to replace back with forward slashes in case a path to a directory is not recognized.
+
 ## Examples
 Add the default grid to a mod:
 ```
@@ -37,3 +39,9 @@ Create a custom grid using the base game as the source terrain:
 grid_generator --game-dir "C:\Program Files (x86)\Steam\steamapps\common\Age2HD" --alpha 1.0 --width 5 --color 255 0 0
 ```
 ![custom grid alpha 1.0, width 5, color 255 0 0](screenshots/custom.png)
+
+# Building
+To make a release install [PyInstaller](http://www.pyinstaller.org/) and run
+```
+pyinstaller --clean --onefile grid_generator.py
+```
