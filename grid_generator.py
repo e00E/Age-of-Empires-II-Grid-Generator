@@ -25,6 +25,9 @@ def make_grid_mask(alpha=1.0, width=1):
         d.line([(0, y), (511, y)], fill=fill, width=width)
     return image
 
+def is_valid_directory(path):
+    return path.exists() and path.is_dir()
+
 description = '''
 Add grid lines to the terrain textures of Age of Empires II.
 
@@ -47,10 +50,23 @@ if __name__ == '__main__':
 
     game_directory = Path(args.game_dir)
 
-    source_directory = (game_directory if args.mod_dir == None else Path(args.mod_dir)) / path
-
-    assert game_directory.exists() and game_directory.is_dir(), 'Game directory is invalid.'
-    assert source_directory.exists() and source_directory.is_dir(), 'Mod directory is invalid.'
+    if not is_valid_directory(game_directory):
+        print('Game directory is invalid.')
+        exit()
+    if args.mod_dir != None:
+        source_directory = Path(args.mod_dir)
+        if not is_valid_directory(source_directory):
+            print('Mod directory is invalid.')
+            exit()
+        source_directory = source_directory / path
+        if not is_valid_directory(source_directory):
+            print('Mod does not contain any terrain textures.')
+            exit()
+    else:
+        source_directory = game_directory / path
+        if not is_valid_directory(source_directory):
+            print('Game does not contain any terrain textures.')
+            exit()
 
     mod_name = 'Grid Generator'
     if not args.preview:
