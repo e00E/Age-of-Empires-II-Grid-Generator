@@ -34,7 +34,7 @@ Add grid lines to the terrain textures of Age of Empires II.
 Read the readme for more information.
 '''
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(prog='Age of Empires II Grid Generator', description=description)
     parser.add_argument('--game-dir', required=True, help='Installation directory of the game.')
     parser.add_argument('--mod-dir', help='Installation directory of an existing mod to add grid lines to instead of the base game.')
@@ -52,21 +52,21 @@ if __name__ == '__main__':
 
     if not is_valid_directory(game_directory):
         print('Game directory is invalid.')
-        exit()
+        return
     if args.mod_dir != None:
         source_directory = Path(args.mod_dir)
         if not is_valid_directory(source_directory):
             print('Mod directory is invalid.')
-            exit()
+            return
         source_directory = source_directory / path
         if not is_valid_directory(source_directory):
             print('Mod does not contain any terrain textures.')
-            exit()
+            return
     else:
         source_directory = game_directory / path
         if not is_valid_directory(source_directory):
             print('Game does not contain any terrain textures.')
-            exit()
+            return
 
     mod_name = 'Grid Generator'
     if not args.preview:
@@ -110,7 +110,10 @@ if __name__ == '__main__':
 
         if args.preview:
             result.rotate(45, resample=Image.LANCZOS, expand=True).show()
-            exit()
+            return
         else:
             result.save(installation_directory / path.name)
     print('Done')
+
+if __name__ == '__main__':
+    main()
