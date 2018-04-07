@@ -3,7 +3,9 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-def make_grid_mask(alpha=1.0, width=1):
+# Default spacing is 51 because in the HD edition tiles are 53 pixels and have two pixels overlap
+# with their neighbours.
+def make_grid_mask(alpha=1.0, width=1, spacing=51, size=512):
     assert alpha >= 0.0 and alpha <= 1.0
     if alpha == 1.0:
         mode = "1"
@@ -13,16 +15,17 @@ def make_grid_mask(alpha=1.0, width=1):
         mode = "L"
         background = 255
         fill = round(255 * (1 - alpha))
-    image = Image.new(mode, (512, 512), background)
+    image = Image.new(mode, (size, size), background)
     d = ImageDraw.Draw(image)
-    spacing = 512 / 10
-    # `int` is used intentionally instead of `round` to always round down.
-    # This seems to perfectly fit the orange highlight when using the terrain brush.
-    coordinates = [int(spacing * i) for i in range(11)]
+    # The eleventh element [size] is intentional:
+    # Width wider than 1 lines the `line` function will draw the line centered on the given
+    # coordinates, so half of the very first line would be out of bounds and thus not visible.
+    # By adding [size] we will get the other half of the line at the end of the image.
+    coordinates = [spacing * i for i in range(10)] + [size]
     for x in coordinates:
-        d.line([(x, 0), (x, 511)], fill=fill, width=width)
+        d.line([(x, 0), (x, size - 1)], fill=fill, width=width)
     for y in coordinates:
-        d.line([(0, y), (511, y)], fill=fill, width=width)
+        d.line([(0, y), (size - 1, y)], fill=fill, width=width)
     return image
 
 def is_valid_directory(path):
@@ -79,6 +82,7 @@ def main():
         print('Showing preview')
 
     mask = make_grid_mask(args.alpha, args.width)
+    grid_masks = {}
     # For blending the images together we need to have matching `modes` in PIL terminology.
     # We map modes to grid images in this dict so we can avoid recreating them unnecessarily.
     grid_images = {}
@@ -100,6 +104,8 @@ def main():
         # so we resize them before applying the grid.
         # If this was not the case we would have to generate a different grid mask for each resolution.
         if original.size != (512, 512):
+            print(path, "should have dimensions of (512, 512) but actually has", original.size,
+                    ". Will be resized.")
             original = original.resize((512, 512), Image.LANCZOS)
 
         if not mode in grid_images:
